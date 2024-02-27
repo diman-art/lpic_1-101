@@ -69,6 +69,9 @@ l
 p
 w
 
+mkswap /dev/sdc4 
+swapon /dev/sdc4
+swapon -s
 5) Добавить еще два диска и создать на нем несколько логических томов (LVM).
 fdisk /dev/sdc
 n
@@ -87,6 +90,10 @@ t
 1
 l
 8e     # Linux LVM
+t
+2
+l
+8e
 p     
 w
 
@@ -115,6 +122,7 @@ vgextend vg_goryachev /dev/sdb
 Теперь можно создать ещё один логический диск (lvcreate) или увеличить размер существующего (lvresize)
 
 6) Попробовать переносить тома с одного жесткого диска на другой без остановки ОС.
+lvconvert -m 1 /dev/vg_goryachev/lv1 /dev/sdb2
 7) Определить точную версию ядра ОС.
 uname -r
 
