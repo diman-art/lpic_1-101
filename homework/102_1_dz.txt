@@ -48,14 +48,73 @@ mkfs.ext4 /dev/sdc6
 
 2) Смонтировать в них несколько пустоых корневых каталогов.
 cd /;mkdir -p {1..5}
-mount /dev/sdc1 1
+mount /dev/sdc1 1        # Чтобы маунты не слетели после ребута, можно записать сюда: /etc/fstab
 mount /dev/sdc2 2
 mount /dev/sdc5 5
 mount /dev/sdc6 6
 
 
 3) Перенести каталог /home на отдельный раздел.
+cp -r /home /root/5
 4) Создать еще один раздел подкачки.
+fdisk /dev/sdc
+n
+p
+4
++10GB
+t
+4
+l
+82
+p
+w
+
 5) Добавить еще два диска и создать на нем несколько логических томов (LVM).
+fdisk /dev/sdc
+n
+p
+1
+Enter
++4GB
+
+n
+p
+1
+Enter
++8GB
+
+t
+1
+l
+8e     # Linux LVM
+p     
+w
+
+# Cоздадим теперь из этих разделов Физический том,который будет виден в LVM
+pvcreate /dev/sdc1
+pvcreate /dev/sdc2
+
+# На этих физических томах создаём группу томов, которая будет называться, скажем, vg_goryachev:
+vgcreate vg_goryachev /dev/sdc1 /dev/sdc2
+
+# Посмотрим информацию о нашей группе томов: 
+vgdisplay vg_goryachev
+
+# Теперь в группе томов можно создать логические тома lv1 и lv2 размером 2 Гбайта и 4 Гбайта:
+lvcreate -n lv1 -L 2G vg_goryachev
+lvcreate -n lv2 -L 4G vg_goryachev
+
+# Теперь у нас есть новые блочные устройства /dev/vg_goryachev/lv1 и /dev/vg_goryachev/lv2, Осталось создать на них файловую систему.
+mkfs.ext4 /dev/vg_goryachev/lv1
+mkfs.ext4 /dev/vg_goryachev/lv2
+
+# Чтобы добавить новый винчестер sdb в группу томов, создадим физический том: 
+pvcreate /dev/sdb
+# И добавим его в нашу группу: 
+vgextend vg_goryachev /dev/sdb
+Теперь можно создать ещё один логический диск (lvcreate) или увеличить размер существующего (lvresize)
+
 6) Попробовать переносить тома с одного жесткого диска на другой без остановки ОС.
 7) Определить точную версию ядра ОС.
+uname -r
+
