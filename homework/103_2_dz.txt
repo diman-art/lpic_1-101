@@ -16,8 +16,20 @@ tail -n 6 /var/log/boot.log
 last | awk '{print $1"    " $5"  "$6"  "$7"  "$8"  "$9"  "$10"  "$11}'
 sed '$d' users_connect > new_users
 8) Из созданного файла создать несколько файлов по событиям входа каждого отдельного пользователя (на каждого пользователя свой журнал).
+cat new_users | awk '{print $1}' > pervii_stolbec_users
+sort -u pervii_stolbec_users > sortirovanii_users
 
+Пишем скрипт:
+#!/bin/bash
+cat sortirovanii_users | while IFS= read line ;do 
+
+name=$(echo ${line})
+
+grep "${line}" new_users >  ${name}.txt
+done
 
 9) Отсортируйте информацию так, чтоб был виден только логин и время входа/выхода.
-cat new_file
+Уже отсортирован
 10) Замените в созданных файлах логин на полное имя пользователя.
+cat iphone.txt | awk -v new=, '{$1="Андрей Павлович Чехов" ; print}'
+
